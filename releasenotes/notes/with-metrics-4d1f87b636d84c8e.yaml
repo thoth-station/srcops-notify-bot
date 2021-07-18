@@ -1,4 +1,0 @@
----
-features:
-  - |
-    With this release we have added a Prometheus compliant export of metrics at `/metrics`.

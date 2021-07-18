@@ -12,21 +12,11 @@ codeowners = "*"
 google-api-python-client = "*"
 oauth2client = "*"
 expiringdict = "*"
-prometheus-async = {extras = ["aiohttp"],version = "*"}
-aiographql-client = "*"
-chatterbot-corpus = "*"
-chatterbot = {ref = "relax-py38", git = "https://github.com/fridex/ChatterBot.git"}
-spacy = "*"
-en-core-web-sm = {file = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.3.1/en_core_web_sm-2.3.1.tar.gz"}
 
 [dev-packages]
-pylint = "*"
-tox = "*"
-pytest = "*"
-pytest-asyncio = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
 
 [pipenv]
-allow_prereleases = true
+allow_prereleases = false

@@ -76,7 +76,7 @@ async def make_release_issue(request: dict):
     return f"Creating the issue failed. \n Log - {resp_text}"
 
 
-async def get_intent(text: str,) -> (str, float, dict):
+async def get_intent(text: str) -> (str, float, dict):
     """Get the Intent of the provided text, and assign it a score."""
     repo_name = None
     tag = None

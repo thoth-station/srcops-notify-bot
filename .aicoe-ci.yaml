@@ -1,7 +1,7 @@
 check:
   - thoth-build
 build:
-  base-image: quay.io/thoth-station/s2i-thoth-ubi8-py38:v0.29.0
+  base-image: quay.io/thoth-station/s2i-thoth-ubi8-py39:v0.30.0-dev
   build-stratergy: "Source"
   registry: "quay.io"
   registry-org: "thoth-station"
@@ -10,5 +10,5 @@ build:
 deploy:
   project-org: "thoth-station"
   project-name: "thoth-application"
-  image-name: "sefkhet-abwy-webhook-receiver"
+  image-name: "srcops-notify-bot"
   overlay-contextpath: "sefkhet-abwy/overlays/ocp/imagestreamtag.yaml"

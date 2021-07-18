@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# Sefkhet-Abwy
-# Copyright(C) 2019-2021 Christoph Görn
+# srcops-notify-bot
+# Copyright(C) 2021 Christoph Görn
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,8 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-"""This will handle all the GitHub webhooks."""
-
+"""This repository contains a Google Hangout chat bot that will send notifications based on GitHub events."""
 
 import logging
 
@@ -33,24 +32,15 @@ from octomachinery.github.config.app import GitHubAppIntegrationConfig
 from octomachinery.github.api.app_client import GitHubApp
 from octomachinery.utils.versiontools import get_version_from_scm_tag
 
-from prometheus_async.aio import time
-
 from expiringdict import ExpiringDict
 
 from aicoe.sesheta import __version__
 from aicoe.sesheta.actions.pull_request import (
-    local_check_gate_passed,
     handle_release_pull_request,
 )
-from aicoe.sesheta.actions.common import (
-    conclude_reviewer_list,
-    unpack,
-)
-from aicoe.sesheta.actions.label import do_not_merge
 from aicoe.sesheta.utils import GITHUB_LOGIN_FILTER, notify_channel, hangouts_userid, realname, random_positive_emoji2
 from thoth.common import init_logging
 
-import aicoe.sesheta.metrics as metrics
 
 
 init_logging(logging_env_var_start="SEFKHET__ABWY_LOG_")
@@ -102,7 +92,6 @@ async def on_install(
 
 @process_event_actions("pull_request", {"closed"})
 @process_webhook_payload
-@time(metrics.REQ_TIME)
 async def on_pr_closed(*, action, number, pull_request, repository, sender, organization, installation, **kwargs):
     """React to an closed PR event."""
     _LOGGER.debug(f"on_pr_closed: working on PR {pull_request['html_url']}")
@@ -344,59 +333,6 @@ async def on_issue_opened(*, action, issue, repository, sender, **kwargs):
         f"issue_{repository['name']}_{issue['id']}",
         issue["html_url"],
     )
-
-
-@process_event_actions("issue_comment", {"created"})
-@process_webhook_payload
-async def on_check_gate(*, action, issue, comment, repository, organization, sender, installation):
-    """Determine if a 'check' gate was passed and the Pull Request is ready for review.
-
-    If the Pull Request is ready for review, assign a set of reviewers.
-    """
-    _LOGGER.debug(f"looking for a passed 'check' gate: {issue['url']}")
-
-    if comment["body"].startswith("Build succeeded."):
-        _LOGGER.debug(f"local/check status might have changed...")
-
-        pr_url = issue["url"].replace("issues", "pulls")
-        pr_body_ok = False
-
-        github_api = RUNTIME_CONTEXT.app_installation_client
-        pr = await github_api.getitem(pr_url)
-        do_not_merge_label = await do_not_merge(pr_url)
-        gate_passed = await local_check_gate_passed(pr_url)
-        reviewer_list = await conclude_reviewer_list(pr["base"]["repo"]["owner"]["login"], pr["base"]["repo"]["name"])
-        current_reviewers = pr["requested_reviewers"]
-        pr_owner = pr["user"]["login"]
-
-        # TODO check if PR body is ok
-
-        # TODO check for size label
-
-        _LOGGER.debug(f"gate passed: {gate_passed}, do_not_merge_label: {do_not_merge_label}, body_ok: {pr_body_ok}")
-
-        if gate_passed and not do_not_merge_label:
-            _LOGGER.debug(f"PR {pr['html_url']} is ready for review!")
-
-            # we do not notify on standard automated SrcOps
-            if not pr["title"].startswith("Automatic update of dependency") and not pr["title"].startswith(
-                "Release of",
-            ):
-                notify_channel(
-                    "plain",
-                    f"🎉 This Pull Request seems to be *ready for review*... the local/check gate has been passed! 💚",
-                    f"pull_request_{repository['name']}_{pr['id']}",
-                    "thoth-station",
-                )
-
-            if reviewer_list is not None:
-                _LOGGER.debug(f"PR {pr['html_url']} could be reviewed by {unpack(reviewer_list)}")
-
-        elif not gate_passed and not len(current_reviewers) == 0:
-            # if a review has been started we should not remove the reviewers
-            _LOGGER.debug(
-                f"PR {pr['html_url']} is NOT ready for review! Removing reviewers: {unpack(current_reviewers)}",
-            )
 
 
 async def on_security_advisory(*, action, security_advisory, **kwargs):

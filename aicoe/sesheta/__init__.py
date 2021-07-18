@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# sefkhet-abwy
-# Copyright(C) 2019,2020,2021 Christoph Görn
+# srcops-notify-bot
+# Copyright(C) 2019-2021 Christoph Görn
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 """Sesheta."""
 
 
-__title__ = "sefkhet-abwy"
-__version__ = "0.22.0-dev"
+__title__ = "srcops-notify-bot"
+__version__ = "0.1.0"
 
 
 async def get_github_client(github_app, account):
